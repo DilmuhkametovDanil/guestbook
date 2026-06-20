@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body bg-secondary text-white text-center rounded">
+                <h5 class="card-title m-0">📊 Всего сообщений: {{ count }}</h5>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-3">Оставить сообщение</h4>
+                {% if error %}
+                    <div class="alert alert-danger" role="alert">⚠️ Заполни все поля!</div>
+                {% endif %}
+                <form action="/add" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Ваше имя</label>
+                        <input type="text" name="name" class="form-row form-control {% if error %}is-invalid{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Сообщение</label>
+                        <textarea name="message" rows="4" class="form-control {% if error %}is-invalid{% endif %}"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <h3 class="mb-3">Лента сообщений</h3>
+        {% if not messages %}
+            <div class="alert alert-info">Сообщений пока нет. Будьте первым!</div>
+        {% endif %}
+        {% for msg in messages %}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title m-0 text-primary">{{ msg.name }}</h5>
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted me-3">{{ msg.created_at }}</small>
+                            {% if session.get('logged_in') %}
+                                <a href="/delete/{{ msg.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить это сообщение?')">Удалить</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="card-text text-dark">{{ msg.message }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
