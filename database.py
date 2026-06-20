@@ -28,7 +28,7 @@ def init_db():
         )
     ''')
     
-    # Стандартный админ
+    # Стандартный admin
     cursor.execute('SELECT * FROM users WHERE username = ?', ('admin',))
     if not cursor.fetchone():
         cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', ('admin', '123'))
