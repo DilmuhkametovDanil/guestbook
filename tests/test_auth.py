@@ -4,12 +4,11 @@ from database import init_db
 
 @pytest.fixture
 def client():
-    # Настраиваем Flask для режима тестирования
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
     with app.test_client() as client:
         with app.app_context():
-            init_db()  # Инициализируем базу данных перед тестами
+            init_db()
         yield client
 
 # ============================================================
@@ -43,8 +42,9 @@ def test_login_failure(client):
     # Страница с ошибкой (код 200, а не редирект 302)
     assert response.status_code == 200
     
-    # Проверяем, что есть сообщение об ошибке
-    assert b'\xd0\x9d\xd0\xb5\xd0\xb2\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b\xd0\xb9' in response.data or b'bad' in response.data or response.status_code == 200
+    # Проверяем, что есть сообщение об ошибке (с декодированием, чтобы тест не падал)
+    page_text = response.data.decode('utf-8')
+    assert 'Неверный логин или пароль' in page_text
     
     # Проверяем, что сессия НЕ установлена
     with client.session_transaction() as sess:
@@ -66,6 +66,11 @@ def test_delete_without_auth(client):
     
     # Должен быть редирект на страницу входа
     assert response.status_code == 302
+    
+    # Проверяем, что сообщение осталось
+    response = client.get('/')
+    page_text = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' in page_text
 
 # ============================================================
 # ТЕСТ 4. Удаление с авторизацией
@@ -84,9 +89,19 @@ def test_delete_with_auth(client):
         'message': 'Сообщение для удаления'
     })
     
+    # Проверяем, что сообщение появилось
+    response = client.get('/')
+    page_text = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' in page_text
+    
     # Удаляем
     response = client.get('/delete/1')
     assert response.status_code == 302
+    
+    # Проверяем, что сообщение исчезло
+    response = client.get('/')
+    page_text = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' not in page_text
 
 # ============================================================
 # ТЕСТ 5. Выход из системы
