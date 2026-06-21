@@ -42,9 +42,9 @@ def test_login_failure(client):
     # Страница с ошибкой (код 200, а не редирект 302)
     assert response.status_code == 200
     
-    # Проверяем, что есть сообщение об ошибке (с декодированием, чтобы тест не падал)
-    page_text = response.data.decode('utf-8')
-    assert 'Неверный логин или пароль' in page_text
+    # Чтобы не было проблем с кодировкой букв b'', мы декодируем данные от сервера в обычный текст
+    text_data = response.data.decode('utf-8')
+    assert 'Неверный логин или пароль' in text_data
     
     # Проверяем, что сессия НЕ установлена
     with client.session_transaction() as sess:
@@ -69,8 +69,8 @@ def test_delete_without_auth(client):
     
     # Проверяем, что сообщение осталось
     response = client.get('/')
-    page_text = response.data.decode('utf-8')
-    assert 'Сообщение для удаления' in page_text
+    text_data = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' in text_data
 
 # ============================================================
 # ТЕСТ 4. Удаление с авторизацией
@@ -91,8 +91,8 @@ def test_delete_with_auth(client):
     
     # Проверяем, что сообщение появилось
     response = client.get('/')
-    page_text = response.data.decode('utf-8')
-    assert 'Сообщение для удаления' in page_text
+    text_data = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' in text_data
     
     # Удаляем
     response = client.get('/delete/1')
@@ -100,8 +100,8 @@ def test_delete_with_auth(client):
     
     # Проверяем, что сообщение исчезло
     response = client.get('/')
-    page_text = response.data.decode('utf-8')
-    assert 'Сообщение для удаления' not in page_text
+    text_data = response.data.decode('utf-8')
+    assert 'Сообщение для удаления' not in text_data
 
 # ============================================================
 # ТЕСТ 5. Выход из системы
